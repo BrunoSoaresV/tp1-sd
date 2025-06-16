@@ -1,0 +1,481 @@
+<div class="mt-8 text-center"></div>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hyperledger Fabric - Bruno Soares Veríssimo - Trabalho Prático 01: Sistemas
+Distribuídos
+</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chosen Palette: Calm Tech Neutrals -->
+    <!-- Application Structure Plan: The definitive version, integrating 100% of the source PDF's text. To manage the increased text density without sacrificing UI clarity, "Leia Mais" (Read More) toggles are implemented for detailed sections. This preserves the scannable, high-level overview while providing access to the full, unabridged content on demand. The structure remains a guided journey, but now each stop contains the complete, in-depth information from the original report, making it a true 1-to-1 interactive recreation. -->
+    <!-- Visualization & Content Choices: 
+        - MAJOR ENHANCEMENT - Full Text Integration: All descriptive text from the PDF has been integrated. For long sections, a JS-powered "Leia Mais" toggle shows a summary first and allows the user to expand to the full text. This applies to component descriptions, deployment details, and the case study narrative.
+        - The unified animated architecture/transaction flow diagram is kept as the central interactive element.
+        - The on-demand glossary, resilience simulation, and other interactive elements are all maintained to support the complete textual content.
+        - The goal is zero information loss from the source PDF, presented in the most digestible interactive format possible.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        @import url('https://rsms.me/inter/inter.css');
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) { .chart-container { height: 350px; } }
+        .nav-link { transition: color 0.3s; }
+        .nav-link:hover { color: #0369a1; }
+        
+        .diag-org { border: 2px dashed #94a3b8; padding: 1rem; border-radius: 0.5rem; position: relative; }
+        .diag-component { border: 2px solid #0ea5e9; background-color: #f0f9ff; padding: 0.75rem; border-radius: 0.5rem; text-align: center; cursor: pointer; transition: all 0.2s ease-in-out; position: relative; z-index: 10; }
+        .diag-component.active, .diag-component:hover { background-color: #e0f2fe; border-color: #0284c7; transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+        
+        .flow-arrow {
+            position: absolute;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+            color: #ef4444;
+            font-weight: bold;
+            font-size: 0.875rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background-color: white;
+            border: 1px solid #ef4444;
+            z-index: 20;
+            pointer-events: none;
+        }
+        .flow-arrow.visible { opacity: 1; }
+        
+        #glossary-modal { transition: opacity 0.3s ease, visibility 0.3s ease; }
+
+        .expandable-content {
+            max-height: 100px;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+            position: relative;
+        }
+        .expandable-content::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background: linear-gradient(to top, rgb(248 250 252), transparent);
+            pointer-events: none;
+        }
+        .expandable-content.expanded {
+            max-height: 1000px; /* Adjust as needed */
+        }
+        .expandable-content.expanded::after {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-40 shadow-sm">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="text-xl font-bold text-slate-900">Hyperledger Fabric</div>
+            <div class="hidden lg:flex space-x-8">
+                <a href="#overview" class="nav-link text-slate-600">Visão Geral</a>
+                <a href="#how-it-works" class="nav-link text-slate-600">Como Funciona</a>
+                <a href="#deployment" class="nav-link text-slate-600">Implantação</a>
+                <a href="#fault-tolerance" class="nav-link text-slate-600">Tolerância a Falhas</a>
+                <a href="#case-study" class="nav-link text-slate-600">Estudo de Caso</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-6 py-8 md:py-12">
+        
+        <section id="overview" class="text-center py-12 md:py-20">
+            <h1 class="text-4xl md:text-6xl font-extrabold text-slate-900 mb-4">Hyperledger Fabric - Bruno Soares Veríssimo </h1>
+            <p class="text-lg md:text-xl text-slate-600 max-w-4xl mx-auto">Trabalho Prático 01: Sistemas Distribuídos, explorando em profundidade a arquitetura, implantação, consenso e robustez do Hyperledger Fabric.</p>
+            
+            <div class="mt-16 text-left bg-white p-8 rounded-lg shadow-md border">
+                <h3 class="text-2xl font-bold text-sky-800 mb-4">1. O que é Blockchain?</h3>
+                <p class="text-slate-700 leading-relaxed">De forma simplificada, uma blockchain é um livro-razão (ledger) digital, distribuído e imutável. Em vez de ser mantido por uma autoridade central (como um banco ou um governo), ele é compartilhado e sincronizado entre múltiplos computadores em uma rede ponto-a-ponto (P2P). <br><br> Os seus princípios fundamentais são:</p>
+                <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                     <div class="bg-slate-50 p-6 rounded-lg border">
+                        <h4 class="font-bold text-lg text-slate-800">Descentralização</h4>
+                        <p class="text-slate-600 mt-2">Não há um ponto único de falha ou controle. A confiança é estabelecida por meio de consenso criptográfico e colaboração entre os participantes da rede.</p>
+                    </div>
+                     <div class="bg-slate-50 p-6 rounded-lg border">
+                        <h4 class="font-bold text-lg text-slate-800">Imutabilidade</h4>
+                        <p class="text-slate-600 mt-2">As transações são agrupadas em "blocos" e cada bloco é criptograficamente ligado ao anterior, formando uma "cadeia". Uma vez que um bloco é adicionado à cadeia, é extremamente difícil alterá-lo sem invalidar todos os blocos subsequentes, o que garante a integridade dos registros.</p>
+                    </div>
+                     <div class="bg-slate-50 p-6 rounded-lg border">
+                        <h4 class="font-bold text-lg text-slate-800">Transparência</h4>
+                        <p class="text-slate-600 mt-2">Todos os participantes da rede (autorizados) possuem uma cópia do mesmo livro-razão, o que permite visibilidade e auditabilidade das transações registradas.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="how-it-works" class="py-12 md:py-20">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-900">2. Como Funciona?</h2>
+                <p class="mt-2 text-lg text-slate-600 max-w-3xl mx-auto">Esta seção combina a arquitetura e o fluxo de transações em uma única experiência interativa. Use os controles para animar o fluxo de dados sobre os componentes da rede e clique em cada componente para ver sua descrição detalhada.</p>
+            </div>
+
+            <div class="bg-white p-8 rounded-lg shadow-lg border border-slate-200">
+                <h3 class="text-2xl font-bold text-center mb-4">Arquitetura e Fluxo de Transação Animado</h3>
+                <div id="step-description" class="text-center text-lg text-slate-700 mb-8 p-4 bg-sky-50 rounded-md border border-sky-200 min-h-[80px]"></div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                    <div id="architecture-diagram" class="lg:col-span-3 relative">
+                        <div class="space-y-4">
+                            <div class="diag-org">
+                                <h4 class="font-bold text-slate-700 mb-2">Cliente</h4>
+                                <div id="diag-client" class="diag-component border-green-500" data-component="client">Aplicação Cliente</div>
+                            </div>
+                            <div class="diag-org">
+                                <h4 class="font-bold text-slate-700 mb-2">Organização 1</h4>
+                                <div class="diag-component mt-4" data-component="peers">Peer 0 (Endorser) + Ledger</div>
+                            </div>
+                            <div class="diag-org mt-4 border-sky-500">
+                                <div id="diag-orderer" class="diag-component" data-component="orderers">Serviço de Ordenação (Raft)</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-2 bg-slate-50 p-6 rounded-md border border-slate-200 min-h-[300px] self-start">
+                        <h4 class="text-xl font-bold text-center mb-4">Detalhes do Componente</h4>
+                        <div id="component-info-container">
+                             <div class="component-info" data-cid="client">
+                                <h5 class="text-xl font-bold text-green-800 mb-2">Aplicação Cliente</h5>
+                                <p class="text-slate-700">A aplicação que inicia o fluxo, construindo e enviando propostas de transação para a rede em nome de um usuário.</p>
+                            </div>
+                            <div class="component-info active" data-cid="peers">
+                                <h5 class="text-xl font-bold text-sky-800 mb-2">Peers (Pares)</h5>
+                                <p class="text-slate-700">São os nós fundamentais da rede. Eles hospedam cópias do livro-razão e instâncias dos contratos inteligentes (chaincode). Existem dois tipos de peers: <strong>Endorsing Peers</strong>, que recebem uma proposta de transação, a simulam e, se válida, a "endossam" (assinam digitalmente); e <strong>Committing Peers</strong>, que recebem os blocos já ordenados e validam cada transação antes de adicioná-las à sua cópia do ledger. Todo endorsing peer é também um committing peer.</p>
+                            </div>
+                            <div class="component-info" data-cid="orderers">
+                                <h5 class="text-xl font-bold text-sky-800 mb-2">Orderers (Ordenadores)</h5>
+                                <p class="text-slate-700">São responsáveis por criar uma ordem total das transações endossadas. Eles recebem as transações de múltiplos clientes, as ordenam em blocos e as enviam para os peers. Usam um protocolo de consenso (como o Raft) para garantir a consistência, oferecendo tolerância a falhas.</p>
+                            </div>
+                            <div class="component-info" data-cid="cas">
+                                <h5 class="text-xl font-bold text-sky-800 mb-2">Certificate Authorities (CAs)</h5>
+                                <p class="text-slate-700">São responsáveis por gerenciar as identidades digitais da rede. Emitem certificados que associam uma identidade (usuário, peer, etc.) a uma organização específica, formando a base do Membership Service Provider (MSP).</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                 <div class="flex justify-between items-center mt-8 pt-4 border-t">
+                    <button id="prev-step" class="px-6 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300 transition disabled:opacity-50">Anterior</button>
+                    <div id="step-indicator" class="font-semibold">Passo 0 de 4</div>
+                    <button id="next-step" class="px-6 py-2 bg-sky-600 text-white rounded-md hover:bg-sky-700 transition">Próximo</button>
+                </div>
+                <img src="arquitetura.png" alt="Diagrama de Arquitetura do Hyperledger Fabric" class="mt-2 w-3/4 h-auto mx-auto rounded-lg shadow-md">
+            </div>
+        </section>
+
+        <section id="deployment" class="py-12 md:py-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-900">3. Instalação e Implantação</h2>
+                <p class="mt-2 text-lg text-slate-600 max-w-3xl mx-auto">O Fabric é projetado para ser implantado em ambientes distribuídos usando contêineres. Veja as abordagens para desenvolvimento e produção.</p>
+            </div>
+             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white p-8 rounded-lg shadow-lg border border-slate-200">
+                    <div class="flex items-center gap-4 mb-4"><div class="mx-auto bg-sky-100 h-16 w-16 rounded-full flex items-center justify-center"><span class="text-3xl">💻</span></div><h3 class="text-2xl font-bold">Desenvolvimento Local</h3></div>
+                    <div class="expandable-content"><p class="text-slate-700">Para aprendizado e desenvolvimento, o Hyperledger Fabric fornece o repositório `fabric-samples`, que contém a **Test Network**. Esta rede é facilmente iniciada com scripts que usam **Docker Compose** para orquestrar os contêineres de peers, orderers e CAs em uma única máquina. É o ponto de partida ideal para desenvolver e testar chaincodes.</p></div>
+                    <button class="expand-btn mt-2 text-sky-600 font-semibold">Leia Mais</button>
+                </div>
+                <div class="bg-white p-8 rounded-lg shadow-lg border border-slate-200">
+                     <div class="flex items-center gap-4 mb-4"><div class="mx-auto bg-sky-100 h-16 w-16 rounded-full flex items-center justify-center"><span class="text-3xl">☁️</span></div><h3 class="text-2xl font-bold">Produção em Nuvem</h3></div>
+                    <div class="expandable-content"><p class="text-slate-700">Para um ambiente de produção ou para este trabalho prático, a implantação deve ser feita em um cluster de máquinas em uma nuvem pública (AWS, Azure, Google Cloud). A abordagem padrão da indústria é:
+                    <br>1. Provisionar um **Cluster Kubernetes**: Utilizar um serviço gerenciado como Azure Kubernetes Service (AKS) ou Google Kubernetes Engine (GKE).
+                    <br>2. Usar **Helm Charts**: O Helm, um gerenciador de pacotes para Kubernetes, automatiza a implantação de cada componente do Fabric como um conjunto de Pods e Services.
+                    <br>3. Configurar **Persistência e Rede**: Configurar volumes persistentes para que os dados do ledger não sejam perdidos e expor os serviços de forma segura usando Ingress Controllers ou Load Balancers.</p></div>
+                     <button class="expand-btn mt-2 text-sky-600 font-semibold">Leia Mais</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="fault-tolerance" class="py-12 md:py-20">
+             <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-900">4. Tolerância a Falhas</h2>
+                <p class="mt-2 text-lg text-slate-600 max-w-3xl mx-auto">A tolerância a falhas é um recurso avançado e valorizado, obtido pela combinação do Fabric e do orquestrador. A robustez é crítica e é uma responsabilidade compartilhada.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white p-8 rounded-lg shadow-lg border border-slate-200">
+                    <h3 class="text-2xl font-bold mb-4">Nível do Orquestrador (Kubernetes)</h3>
+                    <p class="text-slate-700">O Kubernetes garante a tolerância a falhas da infraestrutura. Se um contêiner (Pod) de um peer falhar, o Kubernetes automaticamente o reiniciará.</p>
+                </div>
+                <div class="bg-white p-8 rounded-lg shadow-lg border border-slate-200">
+                    <h3 class="text-2xl font-bold mb-4">Nível do Middleware (Fabric)</h3>
+                    <p class="text-slate-700">O Fabric garante a tolerância a falhas do serviço de consenso. Ao configurar o Serviço de Ordenação com o protocolo **Raft**, é possível ter um cluster de ordenadores (ex: 3 ou 5 nós). A rede pode tolerar a falha de alguns desses nós (menos da metade) sem interromper o serviço de ordenação de transações.</p>
+                </div>
+            </div>
+            <div class="bg-white p-8 rounded-lg shadow-lg mt-12 border border-slate-200">
+                 <h3 class="text-2xl font-bold text-center mb-2">Consenso: CFT vs. BFT e o Problema dos Generais Bizantinos</h3>
+                 <p class="text-slate-600 text-center mb-8">O Problema dos Generais Bizantinos é uma analogia para o desafio de alcançar consenso em uma rede com componentes não confiáveis. O Fabric, por ser uma rede permissionada, opta pelo protocolo Raft (Crash Fault Tolerance - CFT), que é mais performático e adequado para ambientes onde não se espera comportamento malicioso (Byzantine Faults), apenas falhas operacionais.</p>
+                 <div class="chart-container">
+                    <canvas id="consensus-chart"></canvas>
+                 </div>
+            </div>
+        </section>
+
+        <section id="case-study" class="py-12 md:py-20">
+             <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-900">5. Estudo de Caso: Rastreabilidade de Leite</h2>
+                <p class="mt-2 text-lg text-slate-600 max-w-3xl mx-auto">Uma prova de conceito para rastrear uma cadeia produtiva de leite, validando os conceitos do Fabric na prática.</p>
+            </div>
+            <div class="bg-white p-8 rounded-lg shadow-lg border border-slate-200 mb-8 space-y-6">
+                 <div>
+                    <h3 class="text-2xl font-bold mb-4">Conceito e Arquitetura da Rede</h3>
+                     <div class="expandable-content"><p class="text-slate-700">Este projeto implementou uma prova de conceito para o rastreamento de uma cadeia produtiva de leite utilizando a plataforma Hyperledger Fabric. A arquitetura da solução foi construída sobre a test-network padrão do Fabric, que simula um ambiente de negócios real com múltiplas organizações. O objetivo principal foi demonstrar como essas entidades, que não necessariamente confiam umas nas outras, podem compartilhar informações de forma segura e transparente em um ledger distribuído e imutável.<br><br>A rede configurada consiste em: Duas Organizações de Peers (Org1 e Org2), cada uma com seu próprio peer. No nosso cenário, a Org1 assume o papel de Produtor Rural, enquanto a Org2 representa o Laticínio. E uma Organização de Ordenação, responsável por ordenar as transações.</p></div>
+                    <button class="expand-btn mt-2 text-sky-600 font-semibold">Leia Mais</button>
+                 </div>
+                 <div>
+                    <h3 class="text-2xl font-bold mb-4">O Chaincode: MilkChaincode</h3>
+                     <p class="text-slate-700">O coração da aplicação é o contrato inteligente (chaincode) MilkChaincode, desenvolvido em Go. Ele define a lógica de negócios e as regras para a manipulação dos ativos na rede.</p>
+                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
+                         <div class="bg-slate-50 p-4 rounded-lg border">
+                            <h4 class="font-bold">Estrutura do Ativo: MilkLot</h4>
+                            <div class="font-mono text-sm mt-2 bg-slate-800 text-white p-3 rounded">{ ID, OriginFarm, ProductionDate, QuantityLiters, Status }</div>
+                         </div>
+                          <div class="bg-slate-50 p-4 rounded-lg border">
+                            <h4 class="font-bold">Funções Implementadas</h4>
+                            <ul class="list-disc list-inside mt-2 text-slate-600">
+                                <li><b>RegisterLot:</b> Permite que o Produtor (Org1) crie o registro inicial de um lote.</li>
+                                <li><b>UpdateStatus:</b> Permite aos participantes atualizarem o status de um lote.</li>
+                                <li><b>GetLot(id):</b> Retorna o estado completo e atual de um lote específico.</li>
+                                 <li><b>GetAllLots():</b> Retorna uma lista de todos os lotes de leite já registrados.</li>
+                            </ul>
+                         </div>
+                     </div>
+                 </div>
+                <div>
+                    <h3 class="text-2xl font-bold mb-4">Testes, Validação e Resiliência</h3>
+                     <div class="expandable-content"><p class="text-slate-700">A aplicação foi rigorosamente testada através da interface de linha de comando (CLI) do Fabric, simulando interações reais entre as organizações. O fluxo validado incluiu a criação, consulta e atualização de um ativo. Um dos testes mais críticos foi o de resiliência: o contêiner do `peer0.org1.example.com` foi deliberadamente parado. Mesmo com o peer offline, uma consulta direcionada ao `peer0.org2.example.com` foi processada com sucesso, provando que a rede permaneceu operacional. Posteriormente, o peer reiniciado sincronizou automaticamente os blocos que perdeu, validando a capacidade de recuperação do sistema.</p></div>
+                    <button class="expand-btn mt-2 text-sky-600 font-semibold">Leia Mais</button>
+                 </div>
+            </div>
+            <div class="bg-white p-8 rounded-lg shadow-lg border border-slate-200">
+                <h3 class="text-2xl font-bold mb-8 text-center">Conclusão e Próximos Passos (Roadmap)</h3>
+                <p class="text-center text-slate-600 mb-10">A implementação atual provou com sucesso a viabilidade do uso de Hyperledger Fabric para um sistema de rastreabilidade de suprimentos. Foi demonstrado na prática como criar, atualizar e consultar ativos em uma rede com múltiplas organizações, além de validar a robustez e a tolerância a falhas da arquitetura.</p>
+                <div class="relative">
+                    <!-- The road -->
+                    <div class="absolute left-1/2 top-0 h-full w-1 bg-slate-200 rounded -translate-x-1/2"></div>
+                    <!-- Roadmap items -->
+                    <div class="relative mb-8 flex justify-end">
+                        <div class="absolute left-1/2 -translate-x-1/2 w-8 h-8 bg-sky-600 rounded-full border-4 border-white"></div>
+                        <div class="w-1/2 pl-8 text-left">
+                             <div class="p-4 bg-slate-100 rounded-lg">
+                                <h4 class="font-bold">Controle de Acesso</h4>
+                                <p>Refinar o chaincode para que apenas organizações específicas possam chamar certas funções (ex: somente o Laticínio pode invocar uma função de processamento).</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="relative mb-8">
+                        <div class="absolute left-1/2 -translate-x-1/2 w-8 h-8 bg-sky-600 rounded-full border-4 border-white"></div>
+                        <div class="w-1/2 pr-8 text-right">
+                             <div class="p-4 bg-slate-100 rounded-lg">
+                                <h4 class="font-bold">Expansão da Rede</h4>
+                                <p>Adicionar uma terceira organização para o Varejista, completando o ciclo da cadeia de suprimentos.</p>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="relative">
+                        <div class="absolute left-1/2 -translate-x-1/2 w-8 h-8 bg-sky-600 rounded-full border-4 border-white"></div>
+                        <div class="w-1/2 pl-8 text-left ml-auto">
+                            <div class="p-4 bg-slate-100 rounded-lg">
+                                <h4 class="font-bold">Funções Adicionais</h4>
+                                <p>Implementar a função `DeleteLot` e uma função de histórico mais detalhada, como `GetHistoryForLot`.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+    </main>
+
+    <div id="glossary-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 invisible opacity-0">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+            <div class="flex justify-between items-center p-4 border-b">
+                <h3 class="text-2xl font-bold">Glossário de Termos</h3>
+                <button id="close-glossary" class="text-3xl leading-none">&times;</button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div><h4 class="font-bold text-sky-700">Chaincode</h4><p>O contrato inteligente no Hyperledger Fabric; a lógica de negócio que define os ativos e as transações.</p></div>
+                <div><h4 class="font-bold text-sky-700">Ledger (Livro-Razão)</h4><p>Composto pelo World State (o estado atual dos dados) e a Blockchain (o histórico imutável de transações).</p></div>
+                <div><h4 class="font-bold text-sky-700">MSP (Membership Service Provider)</h4><p>O componente que gerencia as identidades e permissões da rede, associando participantes a certificados digitais emitidos por uma CA.</p></div>
+                <div><h4 class="font-bold text-sky-700">Peer (Par)</h4><p>Um nó da rede que hospeda o ledger e o chaincode. Pode ser um Endorser (que simula e assina transações) ou um Committer (que valida e grava blocos).</p></div>
+                <div><h4 class="font-bold text-sky-700">Orderer (Ordenador)</h4><p>Um nó (ou cluster de nós) responsável por criar uma ordem cronológica das transações e empacotá-las em blocos. Usa um protocolo de consenso como o Raft.</p></div>
+                 <div><h4 class="font-bold text-sky-700">Raft</h4><p>Um protocolo de consenso do tipo CFT (Crash Fault Tolerant), baseado em um modelo de líder-seguidor, usado pelo serviço de ordenação para garantir a consistência.</p></div>
+            </div>
+        </div>
+    </div>
+
+    <button id="open-glossary" class="fixed bottom-6 right-6 bg-sky-600 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center text-3xl z-50 hover:bg-sky-700 transition">?
+    </button>
+
+    <footer class="bg-slate-800 text-slate-300 mt-20">
+        <div class="container mx-auto px-6 py-8 text-center">
+            <p>Baseado no relatório "Trabalho Prático 01: Sistemas Distribuídos" de Bruno Soares Veríssimo.</p>
+            <p>Portal Interativo gerado em 16 de junho de 2025.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const stepDescriptions = [
+                "Clique em 'Próximo' para iniciar a animação do fluxo de transação.",
+                "FASE 1: EXECUTE - A Aplicação Cliente cria uma proposta e a envia ao Peer Endossante para simulação e assinatura (endosso).",
+                "FASE 2: ORDER - O Cliente envia a transação endossada para o Serviço de Ordenação, que a coloca em uma ordem cronológica e a empacota em um bloco.",
+                "FASE 3: VALIDATE - O Ordenador distribui o bloco a todos os peers, que validam cada transação antes de aplicá-la em seu ledger.",
+                "FIM: A transação foi validada e registrada de forma imutável no ledger de cada peer na rede."
+            ];
+
+            let currentStep = 0;
+            const totalSteps = 4;
+            const nextBtn = document.getElementById('next-step');
+            const prevBtn = document.getElementById('prev-step');
+            const stepIndicator = document.getElementById('step-indicator');
+            const stepDescriptionEl = document.getElementById('step-description');
+            
+            function createArrow(id, fromEl, toEl, text) {
+                const diagram = document.getElementById('architecture-diagram');
+                if (!diagram || !fromEl || !toEl) return;
+                
+                const arrow = document.createElement('div');
+                arrow.id = id;
+                arrow.className = 'flow-arrow';
+                arrow.textContent = text;
+                diagram.appendChild(arrow);
+                
+                const fromRect = fromEl.getBoundingClientRect();
+                const toRect = toEl.getBoundingClientRect();
+                const diagramRect = diagram.getBoundingClientRect();
+
+                let startX, startY, endX, endY;
+
+                if (fromRect.bottom < toRect.top) { // Downwards
+                    startX = fromRect.left + fromRect.width / 2 - diagramRect.left;
+                    startY = fromRect.bottom - diagramRect.top;
+                } else { // Sideways
+                    startX = fromRect.right - diagramRect.left;
+                    startY = fromRect.top + fromRect.height / 2 - diagramRect.top;
+                }
+                
+                endX = toRect.left + toRect.width / 2 - diagramRect.left;
+                endY = toRect.top - diagramRect.top;
+                
+                arrow.style.left = `${startX}px`;
+                arrow.style.top = `${startY + 5}px`;
+                arrow.style.transformOrigin = 'left center';
+                
+                const dx = endX - startX;
+                const dy = endY - startY;
+                const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+                
+                setTimeout(() => {
+                    arrow.style.transform = `translate(10px, -50%)`;
+                    arrow.classList.add('visible');
+                }, 50);
+            }
+
+            function updateFlowAnimation() {
+                const diagram = document.getElementById('architecture-diagram');
+                diagram.querySelectorAll('.flow-arrow').forEach(a => a.remove());
+
+                const clientEl = document.getElementById('diag-client');
+                const peer1El = document.querySelectorAll('.diag-component[data-component="peers"]')[0];
+                const ordererEl = document.getElementById('diag-orderer');
+                
+                document.querySelectorAll('.diag-component').forEach(c => c.classList.remove('ring-4', 'ring-red-400', 'ring-offset-2'));
+                
+                if (currentStep === 1) {
+                    createArrow('arrow1', clientEl, peer1El, '1. Proposta');
+                    clientEl.classList.add('ring-4', 'ring-red-400', 'ring-offset-2');
+                    peer1El.classList.add('ring-4', 'ring-red-400', 'ring-offset-2');
+                } else if (currentStep === 2) {
+                    createArrow('arrow2', clientEl, ordererEl, '2. Tx Endossada');
+                     clientEl.classList.add('ring-4', 'ring-red-400', 'ring-offset-2');
+                    ordererEl.classList.add('ring-4', 'ring-red-400', 'ring-offset-2');
+                } else if (currentStep === 3) {
+                     createArrow('arrow3', ordererEl, peer1El, '3. Bloco');
+                     ordererEl.classList.add('ring-4', 'ring-red-400', 'ring-offset-2');
+                     peer1El.classList.add('ring-4', 'ring-red-400', 'ring-offset-2');
+                }
+            }
+
+            function updateStepView() {
+                stepIndicator.textContent = `Passo ${currentStep} de ${totalSteps}`;
+                stepDescriptionEl.textContent = stepDescriptions[currentStep];
+                prevBtn.disabled = currentStep === 0;
+                nextBtn.disabled = currentStep === totalSteps;
+                updateFlowAnimation();
+            }
+
+            nextBtn.addEventListener('click', () => { if (currentStep < totalSteps) { currentStep++; updateStepView(); } });
+            prevBtn.addEventListener('click', () => { if (currentStep > 0) { currentStep--; updateStepView(); } });
+
+            function setupComponentInfoClick() {
+                document.querySelectorAll('.diag-component').forEach(comp => {
+                    comp.addEventListener('click', (e) => {
+                        const componentId = e.currentTarget.dataset.component;
+                        document.querySelectorAll('.component-info').forEach(info => info.classList.remove('active'));
+                        const activeInfo = document.querySelector(`.component-info[data-cid="${componentId}"]`);
+                        if(activeInfo) activeInfo.classList.add('active');
+                    });
+                });
+            }
+            
+            function setupExpandableContent() {
+                document.querySelectorAll('.expand-btn').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const content = button.previousElementSibling;
+                        content.classList.toggle('expanded');
+                        if (content.classList.contains('expanded')) {
+                            button.textContent = 'Leia Menos';
+                        } else {
+                            button.textContent = 'Leia Mais';
+                        }
+                    });
+                });
+            }
+            
+            function setupGlossary() {
+                const modal = document.getElementById('glossary-modal');
+                const openBtn = document.getElementById('open-glossary');
+                const closeBtn = document.getElementById('close-glossary');
+                openBtn.addEventListener('click', () => { modal.classList.remove('invisible', 'opacity-0'); });
+                closeBtn.addEventListener('click', () => { modal.classList.add('invisible', 'opacity-0'); });
+            }
+            
+            function setupConsensusChart() {
+                const ctx = document.getElementById('consensus-chart')?.getContext('2d');
+                if(!ctx) return;
+                new Chart(ctx, { type: 'bar', data: { labels: ['CFT (Raft)', 'BFT'], datasets: [{ label: 'Complexidade', data: [2, 5], backgroundColor: 'rgba(56, 189, 248, 0.6)'}, { label: 'Performance Relativa', data: [8, 4], backgroundColor: 'rgba(34, 197, 94, 0.6)'}] }, options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } } });
+            }
+
+            function setupSmoothScrolling() {
+                 document.querySelectorAll('a[href^="#"]').forEach(anchor => { anchor.addEventListener('click', function (e) { e.preventDefault(); const target = document.querySelector(this.getAttribute('href')); if(target) { target.scrollIntoView({ behavior: 'smooth' }); } }); });
+            }
+
+            // Initialize all components
+            updateStepView();
+            setupComponentInfoClick();
+            setupConsensusChart();
+            setupSmoothScrolling();
+            setupGlossary();
+            setupExpandableContent();
+        });
+    </script>
+</body>
+</html>

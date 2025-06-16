@@ -1,0 +1,23 @@
+apiVersion: hlf.kungfusoftware.es/v1alpha1
+kind: FabricNetwork
+metadata:
+  name: rede-basica
+spec:
+  # Definição do orderer em RAFT
+  orderer:
+    type: etcdraft
+    replicas: 1
+
+  # Organização única
+  organizations:
+    - mspId: Org1MSP
+      domain: org1.example.com
+      # CA da Org1
+      ca:
+        name: org1-ca
+        enrollId: enroll
+        enrollSecret: enrollpw
+      # Peer da Org1
+      peers:
+        - id: peer0
+          replicas: 1
